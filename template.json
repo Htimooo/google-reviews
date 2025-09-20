@@ -3,11 +3,26 @@
   "Transform": "AWS::Serverless-2016-10-31",
   "Description": "Proxy de reseñas Google (Lambda + HTTP API)",
   "Parameters": {
-    "StageName":   { "Type": "String", "Default": "prod" },
-    "PlaceId":     { "Type": "String", "Description": "Google Place ID de tu negocio" },
-    "SecretName":  { "Type": "String", "Default": "google/places" },
-    "AllowedOrigin": { "Type": "String", "Default": "https://conecta-tech.uy" },
-    "CacheMaxAge": { "Type": "Number", "Default": 21600 }
+    "StageName": {
+      "Type": "String",
+      "Default": "prod"
+    },
+    "PlaceId": {
+      "Type": "String",
+      "Description": "Google Place ID de tu negocio"
+    },
+    "SecretName": {
+      "Type": "String",
+      "Default": "google/places"
+    },
+    "AllowedOrigin": {
+      "Type": "String",
+      "Default": "https://conecta-tech.uy"
+    },
+    "CacheMaxAge": {
+      "Type": "Number",
+      "Default": 21600
+    }
   },
   "Resources": {
     "ReviewsFunction": {
@@ -21,10 +36,18 @@
         "Description": "Proxy seguro para Google Places Details (reseñas)",
         "Environment": {
           "Variables": {
-            "SECRET_NAME": { "Ref": "SecretName" },
-            "GOOGLE_PLACE_ID": { "Ref": "PlaceId" },
-            "CACHE_MAX_AGE": { "Ref": "CacheMaxAge" },
-            "ALLOWED_ORIGIN": { "Ref": "AllowedOrigin" }
+            "SECRET_NAME": {
+              "Ref": "SecretName"
+            },
+            "GOOGLE_PLACE_ID": {
+              "Ref": "PlaceId"
+            },
+            "CACHE_MAX_AGE": {
+              "Ref": "CacheMaxAge"
+            },
+            "ALLOWED_ORIGIN": {
+              "Ref": "AllowedOrigin"
+            }
           }
         },
         "Policies": [
@@ -33,8 +56,12 @@
             "Statement": [
               {
                 "Effect": "Allow",
-                "Action": [ "secretsmanager:GetSecretValue" ],
-                "Resource": { "Fn::Sub": "arn:aws:secretsmanager:::secret:-*" }
+                "Action": [
+                  "secretsmanager:GetSecretValue"
+                ],
+                "Resource": {
+                  "Fn::Sub": "arn:aws:secretsmanager:::secret:-*"
+                }
               }
             ]
           }
@@ -45,7 +72,9 @@
             "Properties": {
               "Path": "/api/reviews",
               "Method": "GET",
-              "ApiId": { "Ref": "HttpApi" }
+              "ApiId": {
+                "Ref": "HttpApi"
+              }
             }
           }
         }
@@ -54,18 +83,31 @@
     "HttpApi": {
       "Type": "AWS::Serverless::HttpApi",
       "Properties": {
-        "StageName": { "Ref": "StageName" },
+        "StageName": {
+          "Ref": "StageName"
+        },
         "CorsConfiguration": {
-          "AllowMethods": [ "GET", "OPTIONS" ],
-          "AllowOrigins": [ { "Ref": "AllowedOrigin" } ],
-          "AllowHeaders": [ "Content-Type" ]
+          "AllowMethods": [
+            "GET",
+            "OPTIONS"
+          ],
+          "AllowOrigins": [
+            {
+              "Ref": "AllowedOrigin"
+            }
+          ],
+          "AllowHeaders": [
+            "Content-Type"
+          ]
         }
       }
     }
   },
   "Outputs": {
     "ApiUrl": {
-      "Value": { "Fn::Sub": "https://.execute-api..amazonaws.com//api/reviews" },
+      "Value": {
+        "Fn::Sub": "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/api/reviews"
+      },
       "Description": "URL del endpoint"
     }
   }
