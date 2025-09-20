@@ -1,0 +1,9 @@
+{
+  "name": "google-reviews-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.882.0",
+    "node-fetch": "^3.3.2"
+  }
+}

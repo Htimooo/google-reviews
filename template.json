@@ -1,0 +1,72 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Description": "Proxy de reseñas Google (Lambda + HTTP API)",
+  "Parameters": {
+    "StageName":   { "Type": "String", "Default": "prod" },
+    "PlaceId":     { "Type": "String", "Description": "Google Place ID de tu negocio" },
+    "SecretName":  { "Type": "String", "Default": "google/places" },
+    "AllowedOrigin": { "Type": "String", "Default": "https://conecta-tech.uy" },
+    "CacheMaxAge": { "Type": "Number", "Default": 21600 }
+  },
+  "Resources": {
+    "ReviewsFunction": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "index.handler",
+        "Runtime": "nodejs18.x",
+        "MemorySize": 256,
+        "Timeout": 10,
+        "CodeUri": "src/",
+        "Description": "Proxy seguro para Google Places Details (reseñas)",
+        "Environment": {
+          "Variables": {
+            "SECRET_NAME": { "Ref": "SecretName" },
+            "GOOGLE_PLACE_ID": { "Ref": "PlaceId" },
+            "CACHE_MAX_AGE": { "Ref": "CacheMaxAge" },
+            "ALLOWED_ORIGIN": { "Ref": "AllowedOrigin" }
+          }
+        },
+        "Policies": [
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [ "secretsmanager:GetSecretValue" ],
+                "Resource": { "Fn::Sub": "arn:aws:secretsmanager:::secret:-*" }
+              }
+            ]
+          }
+        ],
+        "Events": {
+          "HttpApi": {
+            "Type": "HttpApi",
+            "Properties": {
+              "Path": "/api/reviews",
+              "Method": "GET",
+              "ApiId": { "Ref": "HttpApi" }
+            }
+          }
+        }
+      }
+    },
+    "HttpApi": {
+      "Type": "AWS::Serverless::HttpApi",
+      "Properties": {
+        "StageName": { "Ref": "StageName" },
+        "CorsConfiguration": {
+          "AllowMethods": [ "GET", "OPTIONS" ],
+          "AllowOrigins": [ { "Ref": "AllowedOrigin" } ],
+          "AllowHeaders": [ "Content-Type" ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ApiUrl": {
+      "Value": { "Fn::Sub": "https://.execute-api..amazonaws.com//api/reviews" },
+      "Description": "URL del endpoint"
+    }
+  }
+}
