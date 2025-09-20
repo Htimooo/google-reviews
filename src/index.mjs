@@ -52,7 +52,10 @@ export const handler = async (event) => {
 
     const apiKey = await getGoogleApiKey();
     const fields = "name,rating,user_ratings_total,url,reviews";
-    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(GOOGLE_PLACE_ID)}&fields=${fields}&key=${encodeURIComponent(apiKey)}`;
+    const url = new URL("https://maps.googleapis.com/maps/api/place/details/json");
+    url.searchParams.set("place_id", GOOGLE_PLACE_ID);
+    url.searchParams.set("fields", fields);
+    url.searchParams.set("key", apiKey);
 
     const r = await fetch(url, { method: "GET" });
     const json = await r.json();
